@@ -1,0 +1,57 @@
+#include <string>
+#include <vector>
+#include <map>
+
+using namespace std;
+
+//작은 번호판부터 저장하기
+vector<int> solution(vector<int> fees, vector<string> records) 
+{
+    map<int, int> entryTime, totalTime;
+    
+    for(string & str : records)
+    {
+        bool isIN; int time, carNumber; //time은 분 단위로 저장
+        isIN = (str.size() == 13);
+        time = stoi(str.substr(0, 2))*60 + stoi(str.substr(3,2));
+        carNumber = stoi(str.substr(6, 4));
+        
+        auto iter = entryTime.find(carNumber);
+        auto iter2 = totalTime.find(carNumber);
+        if(isIN)
+            entryTime.insert({carNumber, time});
+        else
+        {
+            int t = time - iter->second;
+            if(iter2 ==totalTime.end())
+                totalTime.insert({carNumber, t});
+            else iter2->second += t;
+            entryTime.erase(carNumber);
+        }
+    }
+    
+    
+    for(auto iter=entryTime.begin(); iter!=entryTime.end(); ++iter)
+    {
+        int t = 1439 - (iter->second);
+        int carNumber = iter->first;
+        auto iter2 = totalTime.find(carNumber);
+        if(iter2 ==totalTime.end())
+            totalTime.insert({carNumber, t});
+        else iter2->second += t;
+    }
+    
+    vector<int> ans;
+    for(auto iter=totalTime.begin(); iter!=totalTime.end(); ++iter)
+    {
+        int t = iter->second;
+        if(t <= fees[0]) ans.push_back(fees[1]);
+        else
+        {
+            int tmp = fees[1] + (((t-fees[0])/fees[2]) * fees[3]);
+            if(((t-fees[0])%fees[2]) != 0) tmp += fees[3];
+            ans.push_back(tmp);
+        }
+    }
+    return ans;
+}
